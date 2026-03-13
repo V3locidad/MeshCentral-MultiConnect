@@ -14,5 +14,5 @@
     "url": "https://github.com/V3locidad/MeshCentral-MultiConnect.git"
   },
   "versionHistoryUrl": "https://api.github.com/repos/V3locidad/MeshCentral-MultiConnect/tags",
-  "meshCentralCompat": ">0.4.3"
+  "meshCentralCompat": ">0.0.1"
 }
