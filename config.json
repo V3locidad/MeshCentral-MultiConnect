@@ -1,0 +1,18 @@
+{
+  "name": "Multi Connect",
+  "shortName": "multiconnect",
+  "version": "1.0.0",
+  "author": "V3locidad",
+  "description": "Connect to multiple devices simultaneously with domain or local credentials. Select devices, choose a credential profile, and open interactive console sessions on all targets at once.",
+  "hasAdminPanel": true,
+  "homepage": "https://github.com/V3locidad/MeshCentral-MultiConnect",
+  "changelogUrl": "https://raw.githubusercontent.com/V3locidad/MeshCentral-MultiConnect/master/changelog.md",
+  "configUrl": "https://raw.githubusercontent.com/V3locidad/MeshCentral-MultiConnect/master/config.json",
+  "downloadUrl": "https://github.com/V3locidad/MeshCentral-MultiConnect/archive/master.zip",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/V3locidad/MeshCentral-MultiConnect.git"
+  },
+  "versionHistoryUrl": "https://api.github.com/repos/V3locidad/MeshCentral-MultiConnect/tags",
+  "meshCentralCompat": ">0.4.3"
+}

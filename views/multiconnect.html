@@ -1,0 +1,868 @@
+<!-- MeshCentral Multi Connect Plugin - Web UI View -->
+<style>
+    #multiconnect-container {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        padding: 15px;
+        max-width: 100%;
+    }
+    #multiconnect-container h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 8px;
+    }
+    #multiconnect-container h3 {
+        color: #555;
+        margin-top: 20px;
+    }
+
+    /* Tabs */
+    .mc-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+    }
+    .mc-tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-bottom: none;
+        margin-bottom: -2px;
+        border-radius: 5px 5px 0 0;
+        font-weight: 500;
+    }
+    .mc-tab.active {
+        background: white;
+        border-bottom: 2px solid white;
+        color: #007bff;
+    }
+    .mc-tab:hover:not(.active) {
+        background: #e9ecef;
+    }
+    .mc-panel {
+        display: none;
+    }
+    .mc-panel.active {
+        display: block;
+    }
+
+    /* Credential profiles */
+    .mc-profile-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .mc-profile-card .mc-profile-info {
+        flex: 1;
+    }
+    .mc-profile-card .mc-profile-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+    }
+    .mc-profile-card .mc-profile-details {
+        font-size: 12px;
+        color: #666;
+        margin-top: 3px;
+    }
+    .mc-profile-card .mc-profile-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-left: 8px;
+    }
+    .mc-profile-type.domain { background: #d4edda; color: #155724; }
+    .mc-profile-type.local { background: #fff3cd; color: #856404; }
+
+    .mc-profile-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    /* Buttons */
+    .mc-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .mc-btn-primary { background: #007bff; color: white; }
+    .mc-btn-primary:hover { background: #0056b3; }
+    .mc-btn-success { background: #28a745; color: white; }
+    .mc-btn-success:hover { background: #1e7e34; }
+    .mc-btn-danger { background: #dc3545; color: white; }
+    .mc-btn-danger:hover { background: #bd2130; }
+    .mc-btn-sm { padding: 4px 10px; font-size: 12px; }
+    .mc-btn-lg { padding: 12px 30px; font-size: 16px; }
+    .mc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Form */
+    .mc-form-group {
+        margin-bottom: 12px;
+    }
+    .mc-form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #555;
+    }
+    .mc-form-group input, .mc-form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+    .mc-form-group input:focus, .mc-form-group select:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    .mc-form-row {
+        display: flex;
+        gap: 12px;
+    }
+    .mc-form-row .mc-form-group {
+        flex: 1;
+    }
+
+    /* Modal */
+    .mc-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+    }
+    .mc-modal-overlay.visible {
+        display: flex;
+    }
+    .mc-modal {
+        background: white;
+        border-radius: 10px;
+        padding: 24px;
+        width: 450px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .mc-modal h3 {
+        margin-top: 0;
+        margin-bottom: 16px;
+    }
+    .mc-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    /* Device selection */
+    .mc-device-list {
+        max-height: 350px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    .mc-device-item {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+    }
+    .mc-device-item:hover {
+        background: #f0f7ff;
+    }
+    .mc-device-item:last-child {
+        border-bottom: none;
+    }
+    .mc-device-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+    .mc-device-name {
+        font-weight: 500;
+        font-size: 13px;
+    }
+    .mc-device-status {
+        font-size: 11px;
+        margin-left: auto;
+    }
+    .mc-device-status.online { color: #28a745; }
+    .mc-device-status.offline { color: #dc3545; }
+
+    /* Selection toolbar */
+    .mc-selection-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .mc-selection-count {
+        font-weight: 500;
+        color: #007bff;
+    }
+
+    /* Search */
+    .mc-search {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+
+    /* Connect section */
+    .mc-connect-section {
+        background: #f0f7ff;
+        border: 2px solid #007bff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .mc-connect-section h3 {
+        color: #007bff;
+        margin-top: 0;
+    }
+
+    /* Results */
+    .mc-result-item {
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        font-size: 13px;
+    }
+    .mc-result-item.success { background: #d4edda; color: #155724; }
+    .mc-result-item.error { background: #f8d7da; color: #721c24; }
+    .mc-result-item.pending { background: #fff3cd; color: #856404; }
+
+    /* Log table */
+    .mc-log-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .mc-log-table th {
+        background: #f8f9fa;
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+    }
+    .mc-log-table td {
+        padding: 6px 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .mc-log-table tr:hover td {
+        background: #f8f9fa;
+    }
+
+    /* Loading spinner */
+    .mc-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007bff;
+        border-radius: 50%;
+        animation: mc-spin 1s linear infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    @keyframes mc-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<div id="multiconnect-container">
+    <h2>&#128268; Multi Connect</h2>
+    <p>Connectez-vous simultanement sur plusieurs postes avec un compte domaine ou local.</p>
+
+    <!-- Tabs -->
+    <div class="mc-tabs">
+        <div class="mc-tab active" onclick="mcSwitchTab('connect')">&#127919; Connexion</div>
+        <div class="mc-tab" onclick="mcSwitchTab('profiles')">&#128273; Profils</div>
+        <div class="mc-tab" onclick="mcSwitchTab('logs')">&#128203; Historique</div>
+    </div>
+
+    <!-- Tab: Connect -->
+    <div id="mc-tab-connect" class="mc-panel active">
+        <!-- Profile selection -->
+        <div class="mc-form-group">
+            <label>Profil de connexion :</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="mc-profile-select" style="flex: 1;">
+                    <option value="">-- Selectionnez un profil --</option>
+                </select>
+                <button class="mc-btn mc-btn-primary mc-btn-sm" onclick="mcShowProfileModal()">+ Nouveau</button>
+            </div>
+        </div>
+
+        <!-- Device search & selection -->
+        <h3>Selectionner les postes</h3>
+        <input type="text" class="mc-search" id="mc-device-search" placeholder="&#128269; Rechercher un poste..." oninput="mcFilterDevices()">
+
+        <div class="mc-selection-bar">
+            <span>
+                <input type="checkbox" id="mc-select-all" onchange="mcToggleSelectAll()">
+                <label for="mc-select-all" style="display: inline; cursor: pointer;">Tout selectionner</label>
+            </span>
+            <span class="mc-selection-count" id="mc-selection-count">0 poste(s) selectionne(s)</span>
+        </div>
+
+        <div class="mc-device-list" id="mc-device-list">
+            <div style="padding: 20px; text-align: center; color: #999;">
+                Chargement des postes...
+            </div>
+        </div>
+
+        <!-- Connect button -->
+        <div class="mc-connect-section">
+            <h3>&#9889; Lancer la connexion</h3>
+            <p style="font-size: 13px; color: #555; margin: 5px 0 15px;">
+                Une session console interactive sera ouverte sur chaque poste selectionne avec le compte choisi.
+                Vous pourrez ensuite prendre la main via le Bureau a distance de MeshCentral.
+            </p>
+            <button class="mc-btn mc-btn-success mc-btn-lg" id="mc-connect-btn" onclick="mcConnectAll()" disabled>
+                &#128268; Connecter les postes selectionnes
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div id="mc-results" style="margin-top: 15px; display: none;">
+            <h3>Resultats</h3>
+            <div id="mc-results-list"></div>
+        </div>
+    </div>
+
+    <!-- Tab: Profiles -->
+    <div id="mc-tab-profiles" class="mc-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin-top: 0;">Profils de connexion</h3>
+            <button class="mc-btn mc-btn-primary" onclick="mcShowProfileModal()">+ Ajouter un profil</button>
+        </div>
+        <div id="mc-profiles-list">
+            <p style="color: #999;">Aucun profil configure.</p>
+        </div>
+    </div>
+
+    <!-- Tab: Logs -->
+    <div id="mc-tab-logs" class="mc-panel">
+        <h3 style="margin-top: 0;">Historique des connexions</h3>
+        <button class="mc-btn mc-btn-primary mc-btn-sm" onclick="mcLoadLogs()" style="margin-bottom: 10px;">&#128260; Actualiser</button>
+        <div id="mc-logs-container">
+            <p style="color: #999;">Aucun historique.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add/Edit Profile -->
+<div class="mc-modal-overlay" id="mc-profile-modal">
+    <div class="mc-modal">
+        <h3 id="mc-modal-title">Nouveau profil de connexion</h3>
+        <input type="hidden" id="mc-profile-id" value="">
+
+        <div class="mc-form-group">
+            <label>Nom du profil :</label>
+            <input type="text" id="mc-profile-name" placeholder="Ex: Admin Domaine, Compte local tech...">
+        </div>
+
+        <div class="mc-form-group">
+            <label>Type de compte :</label>
+            <select id="mc-profile-type" onchange="mcToggleDomainField()">
+                <option value="domain">Compte domaine</option>
+                <option value="local">Compte local</option>
+            </select>
+        </div>
+
+        <div class="mc-form-group" id="mc-domain-group">
+            <label>Domaine :</label>
+            <input type="text" id="mc-profile-domain" placeholder="Ex: MONDOMAINE">
+        </div>
+
+        <div class="mc-form-row">
+            <div class="mc-form-group">
+                <label>Nom d'utilisateur :</label>
+                <input type="text" id="mc-profile-username" placeholder="Ex: admin.tech">
+            </div>
+            <div class="mc-form-group">
+                <label>Mot de passe :</label>
+                <input type="password" id="mc-profile-password" placeholder="********">
+            </div>
+        </div>
+
+        <div class="mc-modal-actions">
+            <button class="mc-btn" onclick="mcHideProfileModal()" style="background: #e9ecef;">Annuler</button>
+            <button class="mc-btn mc-btn-success" onclick="mcSaveProfile()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // STATE
+    // ==========================================
+    var mcProfiles = [];
+    var mcSelectedDevices = [];
+    var mcDevices = [];
+
+    // ==========================================
+    // TAB SWITCHING
+    // ==========================================
+    function mcSwitchTab(tabName) {
+        // Update tab buttons
+        var tabs = document.querySelectorAll('.mc-tab');
+        for (var i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active');
+        }
+        event.target.classList.add('active');
+
+        // Update panels
+        var panels = document.querySelectorAll('.mc-panel');
+        for (var i = 0; i < panels.length; i++) {
+            panels[i].classList.remove('active');
+        }
+        document.getElementById('mc-tab-' + tabName).classList.add('active');
+
+        // Load data for the tab
+        if (tabName === 'profiles') mcLoadProfiles();
+        if (tabName === 'logs') mcLoadLogs();
+        if (tabName === 'connect') { mcLoadProfiles(); mcLoadDevices(); }
+    }
+
+    // ==========================================
+    // PROFILES
+    // ==========================================
+    function mcLoadProfiles() {
+        meshserver.send({ action: 'plugin', plugin: 'multiconnect', pluginaction: 'getCredentialProfiles' });
+    }
+
+    function mcRenderProfiles(profiles) {
+        mcProfiles = profiles || [];
+
+        // Update selector in connect tab
+        var select = document.getElementById('mc-profile-select');
+        var currentVal = select.value;
+        select.innerHTML = '<option value="">-- Selectionnez un profil --</option>';
+        for (var i = 0; i < mcProfiles.length; i++) {
+            var p = mcProfiles[i];
+            var typeLabel = p.accountType === 'local' ? '(Local)' : '(' + (p.domain || 'Domaine') + ')';
+            var opt = document.createElement('option');
+            opt.value = p._id;
+            opt.textContent = p.name + ' - ' + p.username + ' ' + typeLabel;
+            select.appendChild(opt);
+        }
+        if (currentVal) select.value = currentVal;
+
+        // Update profiles list tab
+        var container = document.getElementById('mc-profiles-list');
+        if (mcProfiles.length === 0) {
+            container.innerHTML = '<p style="color: #999;">Aucun profil configure. Cliquez sur "Ajouter un profil" pour commencer.</p>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < mcProfiles.length; i++) {
+            var p = mcProfiles[i];
+            var typeClass = p.accountType === 'local' ? 'local' : 'domain';
+            var typeLabel = p.accountType === 'local' ? 'Local' : 'Domaine';
+            html += '<div class="mc-profile-card">';
+            html += '  <div class="mc-profile-info">';
+            html += '    <div class="mc-profile-name">' + mcEscape(p.name) + '<span class="mc-profile-type ' + typeClass + '">' + typeLabel + '</span></div>';
+            html += '    <div class="mc-profile-details">';
+            if (p.accountType !== 'local' && p.domain) html += mcEscape(p.domain) + '\\';
+            html += mcEscape(p.username);
+            if (p.hasPassword) html += ' &bull; Mot de passe configure';
+            html += '    </div>';
+            html += '  </div>';
+            html += '  <div class="mc-profile-actions">';
+            html += '    <button class="mc-btn mc-btn-primary mc-btn-sm" onclick="mcEditProfile(\'' + p._id + '\')">Modifier</button>';
+            html += '    <button class="mc-btn mc-btn-danger mc-btn-sm" onclick="mcDeleteProfile(\'' + p._id + '\', \'' + mcEscape(p.name) + '\')">Supprimer</button>';
+            html += '  </div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+
+        mcUpdateConnectButton();
+    }
+
+    function mcShowProfileModal(profileId) {
+        document.getElementById('mc-profile-id').value = '';
+        document.getElementById('mc-profile-name').value = '';
+        document.getElementById('mc-profile-type').value = 'domain';
+        document.getElementById('mc-profile-domain').value = '';
+        document.getElementById('mc-profile-username').value = '';
+        document.getElementById('mc-profile-password').value = '';
+        document.getElementById('mc-modal-title').textContent = 'Nouveau profil de connexion';
+        mcToggleDomainField();
+        document.getElementById('mc-profile-modal').classList.add('visible');
+    }
+
+    function mcHideProfileModal() {
+        document.getElementById('mc-profile-modal').classList.remove('visible');
+    }
+
+    function mcEditProfile(profileId) {
+        var profile = mcProfiles.find(function (p) { return p._id === profileId; });
+        if (!profile) return;
+        document.getElementById('mc-profile-id').value = profile._id;
+        document.getElementById('mc-profile-name').value = profile.name;
+        document.getElementById('mc-profile-type').value = profile.accountType || 'domain';
+        document.getElementById('mc-profile-domain').value = profile.domain || '';
+        document.getElementById('mc-profile-username').value = profile.username;
+        document.getElementById('mc-profile-password').value = '';
+        document.getElementById('mc-modal-title').textContent = 'Modifier le profil';
+        mcToggleDomainField();
+        document.getElementById('mc-profile-modal').classList.add('visible');
+    }
+
+    function mcSaveProfile() {
+        var profile = {
+            name: document.getElementById('mc-profile-name').value.trim(),
+            accountType: document.getElementById('mc-profile-type').value,
+            domain: document.getElementById('mc-profile-domain').value.trim(),
+            username: document.getElementById('mc-profile-username').value.trim(),
+            password: document.getElementById('mc-profile-password').value
+        };
+
+        if (!profile.name || !profile.username) {
+            alert('Veuillez remplir au moins le nom du profil et le nom d\'utilisateur.');
+            return;
+        }
+
+        var profileId = document.getElementById('mc-profile-id').value;
+        if (profileId) profile._id = profileId;
+
+        meshserver.send({
+            action: 'plugin',
+            plugin: 'multiconnect',
+            pluginaction: 'saveCredentialProfile',
+            profile: profile
+        });
+
+        mcHideProfileModal();
+    }
+
+    function mcDeleteProfile(profileId, name) {
+        if (!confirm('Supprimer le profil "' + name + '" ?')) return;
+        meshserver.send({
+            action: 'plugin',
+            plugin: 'multiconnect',
+            pluginaction: 'deleteCredentialProfile',
+            profileId: profileId
+        });
+    }
+
+    function mcToggleDomainField() {
+        var type = document.getElementById('mc-profile-type').value;
+        document.getElementById('mc-domain-group').style.display = (type === 'domain') ? 'block' : 'none';
+    }
+
+    // ==========================================
+    // DEVICES
+    // ==========================================
+    function mcLoadDevices() {
+        // Access MeshCentral's device list from the current mesh/group
+        mcDevices = [];
+        try {
+            // MeshCentral stores nodes in a global object
+            if (typeof meshes !== 'undefined' && typeof nodes !== 'undefined') {
+                for (var nodeId in nodes) {
+                    var node = nodes[nodeId];
+                    if (node && node.agent) {
+                        mcDevices.push({
+                            _id: node._id,
+                            name: node.name || nodeId,
+                            online: (node.conn && node.conn > 0) ? true : false,
+                            os: node.osdesc || '',
+                            meshName: (meshes && meshes[node.meshid]) ? meshes[node.meshid].name : ''
+                        });
+                    }
+                }
+            }
+        } catch (ex) { }
+
+        mcRenderDevices();
+    }
+
+    function mcRenderDevices() {
+        var container = document.getElementById('mc-device-list');
+        var searchText = (document.getElementById('mc-device-search').value || '').toLowerCase();
+
+        var filtered = mcDevices.filter(function (d) {
+            if (!searchText) return true;
+            return d.name.toLowerCase().indexOf(searchText) >= 0 ||
+                   (d.os || '').toLowerCase().indexOf(searchText) >= 0 ||
+                   (d.meshName || '').toLowerCase().indexOf(searchText) >= 0;
+        });
+
+        // Sort: online first, then alphabetical
+        filtered.sort(function (a, b) {
+            if (a.online !== b.online) return b.online ? 1 : -1;
+            return a.name.localeCompare(b.name);
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Aucun poste trouve.</div>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < filtered.length; i++) {
+            var d = filtered[i];
+            var checked = mcSelectedDevices.indexOf(d._id) >= 0 ? 'checked' : '';
+            var statusClass = d.online ? 'online' : 'offline';
+            var statusText = d.online ? '&#9679; En ligne' : '&#9675; Hors ligne';
+            html += '<div class="mc-device-item" onclick="mcToggleDevice(\'' + d._id + '\', event)">';
+            html += '  <input type="checkbox" ' + checked + ' data-nodeid="' + d._id + '" onclick="event.stopPropagation(); mcToggleDevice(\'' + d._id + '\', event)">';
+            html += '  <div>';
+            html += '    <div class="mc-device-name">' + mcEscape(d.name) + '</div>';
+            html += '    <div style="font-size: 11px; color: #888;">' + mcEscape(d.os) + (d.meshName ? ' &bull; ' + mcEscape(d.meshName) : '') + '</div>';
+            html += '  </div>';
+            html += '  <span class="mc-device-status ' + statusClass + '">' + statusText + '</span>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function mcToggleDevice(nodeId, event) {
+        var idx = mcSelectedDevices.indexOf(nodeId);
+        if (idx >= 0) {
+            mcSelectedDevices.splice(idx, 1);
+        } else {
+            mcSelectedDevices.push(nodeId);
+        }
+        mcRenderDevices();
+        mcUpdateSelectionCount();
+        mcUpdateConnectButton();
+    }
+
+    function mcToggleSelectAll() {
+        var selectAll = document.getElementById('mc-select-all').checked;
+        var searchText = (document.getElementById('mc-device-search').value || '').toLowerCase();
+
+        // Only select/deselect visible (filtered) devices
+        var filtered = mcDevices.filter(function (d) {
+            if (!searchText) return true;
+            return d.name.toLowerCase().indexOf(searchText) >= 0;
+        });
+
+        if (selectAll) {
+            for (var i = 0; i < filtered.length; i++) {
+                if (mcSelectedDevices.indexOf(filtered[i]._id) < 0) {
+                    mcSelectedDevices.push(filtered[i]._id);
+                }
+            }
+        } else {
+            var filteredIds = filtered.map(function (d) { return d._id; });
+            mcSelectedDevices = mcSelectedDevices.filter(function (id) {
+                return filteredIds.indexOf(id) < 0;
+            });
+        }
+
+        mcRenderDevices();
+        mcUpdateSelectionCount();
+        mcUpdateConnectButton();
+    }
+
+    function mcFilterDevices() {
+        mcRenderDevices();
+    }
+
+    function mcUpdateSelectionCount() {
+        var el = document.getElementById('mc-selection-count');
+        el.textContent = mcSelectedDevices.length + ' poste(s) selectionne(s)';
+    }
+
+    function mcUpdateConnectButton() {
+        var btn = document.getElementById('mc-connect-btn');
+        var profileSelected = document.getElementById('mc-profile-select').value;
+        btn.disabled = !(profileSelected && mcSelectedDevices.length > 0);
+    }
+
+    // ==========================================
+    // CONNECT ALL
+    // ==========================================
+    function mcConnectAll() {
+        var profileId = document.getElementById('mc-profile-select').value;
+        if (!profileId) { alert('Veuillez selectionner un profil de connexion.'); return; }
+        if (mcSelectedDevices.length === 0) { alert('Veuillez selectionner au moins un poste.'); return; }
+
+        // Only connect to online devices
+        var onlineDevices = mcSelectedDevices.filter(function (id) {
+            var device = mcDevices.find(function (d) { return d._id === id; });
+            return device && device.online;
+        });
+
+        if (onlineDevices.length === 0) {
+            alert('Aucun poste selectionne n\'est en ligne.');
+            return;
+        }
+
+        var offlineCount = mcSelectedDevices.length - onlineDevices.length;
+        var msg = 'Lancer la connexion sur ' + onlineDevices.length + ' poste(s) en ligne ?';
+        if (offlineCount > 0) msg += '\n(' + offlineCount + ' poste(s) hors ligne seront ignores)';
+        if (!confirm(msg)) return;
+
+        // Show pending results
+        var resultsDiv = document.getElementById('mc-results');
+        var resultsList = document.getElementById('mc-results-list');
+        resultsDiv.style.display = 'block';
+        resultsList.innerHTML = '<div class="mc-result-item pending"><span class="mc-spinner"></span> Connexion en cours sur ' + onlineDevices.length + ' poste(s)...</div>';
+
+        // Disable button during operation
+        document.getElementById('mc-connect-btn').disabled = true;
+        document.getElementById('mc-connect-btn').innerHTML = '<span class="mc-spinner"></span> Connexion en cours...';
+
+        // Send command to server
+        meshserver.send({
+            action: 'plugin',
+            plugin: 'multiconnect',
+            pluginaction: 'connectDevices',
+            profileId: profileId,
+            nodeIds: onlineDevices
+        });
+    }
+
+    function mcRenderResults(results) {
+        var resultsList = document.getElementById('mc-results-list');
+        var html = '';
+
+        for (var i = 0; i < results.length; i++) {
+            var r = results[i];
+            var device = mcDevices.find(function (d) { return d._id === r.nodeId; });
+            var deviceName = device ? device.name : r.nodeId;
+            var statusClass = r.success ? 'success' : 'error';
+            var icon = r.success ? '&#10004;' : '&#10008;';
+            var message = r.success ? 'Session ouverte' : (r.error || 'Erreur');
+
+            html += '<div class="mc-result-item ' + statusClass + '">';
+            html += icon + ' <strong>' + mcEscape(deviceName) + '</strong> - ' + mcEscape(message);
+            html += '</div>';
+        }
+
+        resultsList.innerHTML = html;
+
+        // Re-enable button
+        document.getElementById('mc-connect-btn').disabled = false;
+        document.getElementById('mc-connect-btn').innerHTML = '&#128268; Connecter les postes selectionnes';
+        mcUpdateConnectButton();
+    }
+
+    // ==========================================
+    // LOGS
+    // ==========================================
+    function mcLoadLogs() {
+        meshserver.send({ action: 'plugin', plugin: 'multiconnect', pluginaction: 'getConnectionLog' });
+    }
+
+    function mcRenderLogs(logs) {
+        var container = document.getElementById('mc-logs-container');
+        if (!logs || logs.length === 0) {
+            container.innerHTML = '<p style="color: #999;">Aucun historique de connexion.</p>';
+            return;
+        }
+
+        var html = '<table class="mc-log-table">';
+        html += '<thead><tr><th>Date</th><th>Poste</th><th>Profil</th><th>Utilisateur</th><th>Statut</th></tr></thead>';
+        html += '<tbody>';
+
+        for (var i = 0; i < logs.length; i++) {
+            var log = logs[i];
+            var date = new Date(log.timestamp).toLocaleString('fr-FR');
+            var device = mcDevices.find(function (d) { return d._id === log.nodeId; });
+            var deviceName = device ? device.name : (log.nodeId || '?');
+            var statusHtml = log.success ?
+                '<span style="color: #28a745;">&#10004; Succes</span>' :
+                '<span style="color: #dc3545;">&#10008; Echec</span>';
+
+            html += '<tr>';
+            html += '<td>' + date + '</td>';
+            html += '<td>' + mcEscape(deviceName) + '</td>';
+            html += '<td>' + mcEscape(log.profileName || '') + '</td>';
+            html += '<td>' + mcEscape((log.domain ? log.domain + '\\' : '') + (log.username || '')) + '</td>';
+            html += '<td>' + statusHtml + '</td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // ==========================================
+    // MESSAGE HANDLER
+    // ==========================================
+    function mcHandleServerMessage(data) {
+        if (!data || data.plugin !== 'multiconnect') return;
+
+        switch (data.pluginaction) {
+            case 'getCredentialProfiles':
+                mcRenderProfiles(data.profiles);
+                break;
+            case 'connectResult':
+                if (data.error) {
+                    alert('Erreur: ' + data.error);
+                    document.getElementById('mc-connect-btn').disabled = false;
+                    document.getElementById('mc-connect-btn').innerHTML = '&#128268; Connecter les postes selectionnes';
+                } else {
+                    mcRenderResults(data.results || []);
+                }
+                break;
+            case 'getConnectionLog':
+                mcRenderLogs(data.logs);
+                break;
+        }
+    }
+
+    // Register the message handler with MeshCentral's WebSocket
+    if (typeof pluginHandler !== 'undefined') {
+        pluginHandler.multiconnect = { on_message: mcHandleServerMessage };
+    }
+
+    // ==========================================
+    // UTILITY
+    // ==========================================
+    function mcEscape(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // Listen for profile select changes
+    document.getElementById('mc-profile-select').addEventListener('change', mcUpdateConnectButton);
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    function mcInit() {
+        mcLoadProfiles();
+        mcLoadDevices();
+    }
+
+    // Run init after a short delay to let MeshCentral load
+    setTimeout(mcInit, 500);
+</script>
